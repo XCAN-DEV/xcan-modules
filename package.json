@@ -2,11 +2,14 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:modules": "tsx scripts/migrate-challenges-to-user-modules.ts",
+    "migrate:web3-basics-chapters": "tsx scripts/migrate-web3-basics-completed-chapters.ts"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.4",
@@ -28,6 +31,7 @@
     "drizzle-orm": "^0.44.4",
     "ethers": "^6.14.1",
     "framer-motion": "^12.12.2",
+    "geist": "^1.5.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "lucide-react": "^0.536.0",
@@ -50,10 +54,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

@@ -1,4 +1,6 @@
+import { Database } from "lucide-react";
 import React from "react";
+import { MODULE_THEME_GRADIENT_BR } from "@/theme/moduleTheme";
 
 // Type definition for module icons
 const CodeBracketIcon = ({ className }: { className?: string }) => (
@@ -151,12 +153,29 @@ const GlobeIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const ShieldCheckIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+    />
+  </svg>
+);
+
 // Type definition for a learning module
 export interface LearningModule {
   id: string;
   title: string;
   description: string;
-  icon: (props: { className?: string }) => React.ReactElement;
+  icon: React.ComponentType<{ className?: string }>;
+  image: string;
   level: string;
   duration?: string;
   challenges?: number;
@@ -172,10 +191,11 @@ export interface LearningModule {
 export const learningModules: LearningModule[] = [
   {
     id: "web3-basics",
-    title: "Web3 Basics",
+    title: "Web3 & Rust Foundations",
     description:
       "Learn Web3 fundamentals through engaging stories and interactive lessons. Perfect for beginners - no prior experience needed!",
     icon: GlobeIcon,
+    image: "/Web3 Basics.png",
     level: "Absolute Beginner",
     duration: "1-2 weeks",
     challenges: 6,
@@ -183,7 +203,7 @@ export const learningModules: LearningModule[] = [
     status: "available",
     href: "/learn-web3-basics",
     target: "_self",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Story-Based Learning",
       "Interactive Quizzes",
@@ -198,7 +218,8 @@ export const learningModules: LearningModule[] = [
     title: "Stylus Core Concepts",
     description:
       "Master Arbitrum Stylus and build high-performance smart contracts with Rust. Learn WASM, constructors, storage, and advanced patterns through interactive lessons.",
-    icon: CpuChipIcon,
+    icon: CommandLineIcon,
+    image: "/Stylus Core Concepts.png",
     level: "Beginner to Intermediate",
     duration: "1-2 weeks",
     challenges: 6,
@@ -206,7 +227,7 @@ export const learningModules: LearningModule[] = [
     status: "available",
     href: "/learn-stylus",
     target: "_self",
-    gradient: "from-pink-500 to-rose-400",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Rust & WASM Fundamentals",
       "Constructors & Storage",
@@ -222,13 +243,14 @@ export const learningModules: LearningModule[] = [
     description:
       "Build a complete ERC20 token system and mint your achievement certificate! Learn ERC20 and ERC721 standards with Rust contract development.",
     icon: CpuChipIcon,
+    image: "/Stylus foundation.png",
     level: "Beginner",
     duration: "Less than 1 week",
     challenges: 1,
     status: "available",
     href: "https://www.speedrunstylus.com/foundation",
     target: "_blank",
-    gradient: "from-green-500 to-emerald-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "ERC20 Standard Implementation",
       "ERC721 NFT Standard",
@@ -242,6 +264,7 @@ export const learningModules: LearningModule[] = [
     description:
       "Configure, deploy, test, and operate your own Orbit L3 chain through structured theory and quizzes — no coding required.",
     icon: RocketLaunchIcon,
+    image: "/Master Arbitrum Orbit.png",
     level: "Intermediate to Advanced",
     duration: "2-3 weeks",
     challenges: 6,
@@ -249,7 +272,7 @@ export const learningModules: LearningModule[] = [
     status: "available",
     href: "/learn-orbit",
     target: "_self",
-    gradient: "from-emerald-500 to-teal-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Orbit Fundamentals",
       "Chain Configuration & Gas Tokens",
@@ -264,14 +287,15 @@ export const learningModules: LearningModule[] = [
     title: "Arbitrum Stylus",
     description:
       "Build high-performance smart contracts with Rust, C, and C++ on Arbitrum",
-    icon: CpuChipIcon,
+    icon: Database,
+    image: "/Arbitrum Stylus.png",
     level: "Intermediate to Advanced",
     duration: "3-5 weeks",
     challenges: 11,
     status: "available",
     href: "https://www.speedrunstylus.com/",
     target: "_blank",
-    gradient: "from-purple-500 to-pink-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Rust Development",
       "WebAssembly",
@@ -285,6 +309,7 @@ export const learningModules: LearningModule[] = [
     description:
       "Learn DeFi fundamentals, DEXs, vaults, and security on Arbitrum through structured theory and quizzes with practical concepts.",
     icon: AcademicCapIcon,
+    image: "/Master DeFi on Arbitrum.png",
     level: "Beginner to Intermediate",
     duration: "1-2 weeks",
     challenges: 6,
@@ -292,7 +317,7 @@ export const learningModules: LearningModule[] = [
     status: "available",
     href: "/learn-defi",
     target: "_self",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Fundamentals, DEXs, Vaults, Security",
       "Story-Based Lessons",
@@ -307,6 +332,7 @@ export const learningModules: LearningModule[] = [
     description:
       "Foundations → token bridging → advanced protocols → tooling → Arbitrum bridge and troubleshooting — delivered via stories and quizzes.",
     icon: BookOpenIcon,
+    image: "/Master Cross-Chain Development.png",
     level: "Intermediate to Advanced",
     duration: "2-3 weeks",
     challenges: 6,
@@ -314,7 +340,7 @@ export const learningModules: LearningModule[] = [
     status: "available",
     href: "/learn-cross-chain",
     target: "_self",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Foundations & Real‑World Analogies",
       "Token Bridging Mechanics",
@@ -330,13 +356,14 @@ export const learningModules: LearningModule[] = [
     description:
       "Master Arbitrum's powerful precompiles through interactive coding challenges",
     icon: CodeBracketIcon,
+    image: "/Precompile Playground.png",
     level: "Beginner to Advanced",
     duration: "1-2 weeks",
-    challenges: 6,
+    challenges: 5,
     status: "available",
     href: "/challenges",
     target: "_self",
-    gradient: "from-blue-500 to-indigo-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Interactive Challenges",
       "Real-world Examples",
@@ -345,16 +372,41 @@ export const learningModules: LearningModule[] = [
     ],
   },
   {
+    id: "eigen-ai",
+    title: "Secure AI with Eigen",
+    description:
+      "Learn how EigenLayer enables production-grade AI systems using Trusted Execution Environments. Master TEE, verifiable inference, and confidential compute.",
+    icon: ShieldCheckIcon,
+    image: "/EigenModule.png",
+    level: "Beginner to Advanced",
+    duration: "2-3 weeks",
+    challenges: 8,
+    sections: 18,
+    status: "available",
+    href: "/learn-eigen",
+    target: "_self",
+    gradient: MODULE_THEME_GRADIENT_BR,
+    features: [
+      "AI & TEE Fundamentals",
+      "EigenAI Verifiable Inference",
+      "EigenCompute & Intel TDX",
+      "Production AI Pipelines",
+      "Story-Based Learning",
+      "Interactive Quizzes",
+    ],
+  },
+  {
     id: "project-submission",
     title: "Project Submission",
     description:
       "Built something cool with Stylus? Submit your project to get featured and reviewed by the community. Highlight your skills, gain visibility, and inspire others in the ecosystem.",
     icon: DocumentIcon,
+    image: "/Project Submission.png",
     level: "",
     status: "available",
     href: "/project-submission",
     target: "_self",
-    gradient: "from-orange-500 to-red-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     features: [
       "Project Showcase",
       "Community Reviews",

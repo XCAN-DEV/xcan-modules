@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import { Project } from "./types";
 import Image from "next/image";
 
@@ -27,9 +28,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           <Image
             src={project.projectImages[0]}
             alt={project.projectName}
-            width={100}
-            height={100}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            width={500}
+            height={500}
+            className="w-full h-full object-cover object-top-left group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         ) : (
@@ -43,17 +44,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
 
       {/* Project Info */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-2">
+        <h3 className="text-xl font-bold text-white group-hover:text-[#4A7CFF] transition-colors line-clamp-2">
           {project.projectName}
         </h3>
 
-        <p className="text-slate-300 text-sm line-clamp-3 leading-relaxed">
-          {project.projectDescription}
-        </p>
+        <div className="text-slate-300 text-sm line-clamp-3 leading-relaxed prose prose-sm prose-invert max-w-none">
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+              em: ({ children }) => <em className="italic">{children}</em>,
+              code: ({ children }) => (
+                <code className="bg-slate-700/50 px-1.5 py-0.5 rounded text-xs text-blue-300">{children}</code>
+              ),
+            }}
+          >
+            {project.projectDescription.length > 150
+              ? `${project.projectDescription.slice(0, 150)}...`
+              : project.projectDescription}
+          </ReactMarkdown>
+        </div>
 
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-[#4eb991] to-[#31b085] rounded-full flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-r from-[#1E3A8A] to-[#4A7CFF] rounded-full flex items-center justify-center shadow-lg">
               <span className="text-white text-sm font-bold">
                 {project.submittedBy.name.charAt(0).toUpperCase()}
               </span>

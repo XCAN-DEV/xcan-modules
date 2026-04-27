@@ -24,8 +24,9 @@ import {
 } from "lucide-react";
 import PromoCodeModal from "../../../../../components/PromoCodeModal";
 import Certificate from "@/components/Certificate";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { handleDownloadPDF } from "@/utils/certificate-pdf";
+import { MODULE_THEME_BG_R } from "@/theme/moduleTheme";
+import ConnectWallet from "@/components/ConnectWallet";
 
 export default function ModuleDetailPage() {
   const router = useRouter();
@@ -102,18 +103,42 @@ export default function ModuleDetailPage() {
           setCertificateLocked(Boolean(data.generated));
           if (data.name) setCertificateName(data.name);
         }
-      } catch {}
+      } catch { }
     };
     check();
   }, [currentModule?.id, userAddress]);
 
-  if (!isReady || walletLoading) {
+  if (!isReady) {
     return (
       <div style={{ minHeight: 'calc(100vh - 72px)' }} className="bg-gradient-to-br from-[#020816] to-[#0D1221] flex items-center justify-center relative overflow-hidden">
         <FloatingParticles />
         <GlassCard className="p-12 text-center">
           <Loader2 className="w-12 h-12 text-blue-400 animate-spin mx-auto mb-4" />
           <p className="text-gray-300">Preparing module...</p>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  if (!isWalletConnected) {
+    return (
+      <div
+        style={{ minHeight: "calc(100vh - 72px)" }}
+        className="bg-gradient-to-br from-[#020816] to-[#0D1221] flex items-center justify-center relative overflow-hidden"
+      >
+        <FloatingParticles />
+        <GlassCard className="p-8 text-center max-w-2xl w-full mx-4">
+          <div className="flex flex-col items-center gap-4">
+            <AlertTriangle className="w-12 h-12 text-amber-400" />
+            <h2 className="text-2xl font-bold text-white">
+              Connect Wallet to Access Module
+            </h2>
+            <p className="text-gray-300 max-w-xl">
+              Connect your wallet to view progress and claim this module&apos;s NFT
+              certification.
+            </p>
+            <ConnectWallet />
+          </div>
         </GlassCard>
       </div>
     );
@@ -176,77 +201,6 @@ export default function ModuleDetailPage() {
     isCertificationMinting ||
     isCheckingClaim ||
     alreadyClaimed;
-
-  const handleDownloadPDF = async () => {
-    const node = document.getElementById("certificate");
-    if (!node) return;
-    // Persist one-time generation before download
-    if (
-      !certificateLocked &&
-      certificateName.trim() &&
-      currentModule?.id &&
-      userAddress
-    ) {
-      try {
-        await fetch(`/api/certification/generate/${currentModule.id}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userAddress, name: certificateName.trim() }),
-        });
-        setCertificateLocked(true);
-      } catch {}
-    }
-    const canvas = await html2canvas(node, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#0D1221",
-      removeContainer: true,
-      onclone: (doc) => {
-        const cert = doc.getElementById("certificate") as HTMLElement | null;
-        if (cert) {
-          cert.style.background =
-            "linear-gradient(135deg, #020816 0%, #0D1221 100%)";
-          cert.style.borderRadius = "0";
-        }
-        doc
-          .querySelectorAll("[data-pdf-hide]")
-          .forEach((el) => ((el as HTMLElement).style.display = "none"));
-        const title = doc.querySelector(
-          "#certificate h1"
-        ) as HTMLElement | null;
-        if (title) {
-          title.style.background = "";
-          // @ts-ignore
-          title.style.webkitBackgroundClip = "";
-          title.style.backgroundClip = "";
-          title.style.color = "#E5E7EB";
-          title.style.textShadow = "none";
-        }
-      },
-    });
-    const imgData = canvas.toDataURL("image/png");
-    // Export as standard A4 landscape
-    const pdf = new jsPDF({
-      orientation: "landscape",
-      unit: "mm",
-      format: "a4",
-    });
-    const pageWidth = 297;
-    const pageHeight = 210;
-    const scale = Math.min(
-      pageWidth / canvas.width,
-      pageHeight / canvas.height
-    );
-    const imgWidth = canvas.width * scale;
-    const imgHeight = canvas.height * scale;
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-    pdf.setFillColor(13, 18, 33);
-    pdf.rect(0, 0, pageWidth, pageHeight, "F");
-    pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight, undefined, "FAST");
-    const safeName = (certificateName || "certificate").replace(/\s+/g, "_");
-    pdf.save(`${currentModule?.id || "module"}-certificate-${safeName}.pdf`);
-  };
 
   return (
     <div style={{ minHeight: 'calc(100vh - 72px)' }} className="bg-gradient-to-br from-[#020816] to-[#0D1221] relative overflow-hidden flex flex-col">
@@ -322,15 +276,15 @@ export default function ModuleDetailPage() {
                         {alreadyClaimed
                           ? "Already Claimed"
                           : isCompleted
-                          ? "Module Completed"
-                          : "In Progress"}
+                            ? "Module Completed"
+                            : "In Progress"}
                       </p>
                       <p className="text-gray-400 text-sm">
                         {alreadyClaimed
                           ? "Your certification NFT has been minted."
                           : isCompleted
-                          ? "You can claim your certification NFT."
-                          : "Complete all required challenges to enable claim."}
+                            ? "You can claim your certification NFT."
+                            : "Complete all required challenges to enable claim."}
                       </p>
                     </div>
                   </div>
@@ -340,7 +294,7 @@ export default function ModuleDetailPage() {
                         onClick={() =>
                           router.push(`/nft/certification/${currentModule.id}`)
                         }
-                        className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white"
+                        className={`cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${MODULE_THEME_BG_R} hover:brightness-110 text-white`}
                       >
                         View Minted NFT
                       </button>
@@ -358,11 +312,10 @@ export default function ModuleDetailPage() {
                     <button
                       disabled={isClaimDisabled || !isCompleted}
                       onClick={() => setIsPromoOpen(true)}
-                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                        isClaimDisabled || !isCompleted
-                          ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                          : "cursor-pointer bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
-                      }`}
+                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${isClaimDisabled || !isCompleted
+                        ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                        : `cursor-pointer ${MODULE_THEME_BG_R} hover:brightness-110 text-white`
+                        }`}
                     >
                       {alreadyClaimed ? (
                         <>Claimed</>
@@ -406,24 +359,25 @@ export default function ModuleDetailPage() {
                       </div>
                       <div className="flex md:justify-end">
                         <button
-                          onClick={handleDownloadPDF}
+                          onClick={() => handleDownloadPDF(certificateName)}
                           disabled={!certificateName.trim()}
-                          className={`inline-flex items-center gap-2 px-5 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                            !certificateName.trim()
-                              ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                              : "cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
-                          }`}
+                          className={`inline-flex items-center gap-2 px-5 py-2 rounded-lg font-semibold transition-all duration-200 ${!certificateName.trim()
+                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                            : `cursor-pointer ${MODULE_THEME_BG_R} hover:brightness-110 text-white`
+                            }`}
                         >
                           <Download className="w-4 h-4" /> Download PDF
                         </button>
                       </div>
                     </div>
                     <div ref={certificateRef} className="flex justify-center">
-                      <Certificate
-                        name={certificateName}
-                        title="Certificate of Completion"
-                        subtitle={currentModule?.title}
-                      />
+                      <div className="w-full max-w-[900px]">
+                        <Certificate
+                          name={certificateName}
+                          title="Certificate of Completion"
+                          subtitle={currentModule?.title}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -431,18 +385,18 @@ export default function ModuleDetailPage() {
             </div>
 
             {/* Right: Interactive panel */}
-            <div className="w-full lg:w-[40%]">
+            <div className="w-full lg:w-[34%]">
               <motion.div
                 className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-6 h-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <div className="absolute -top-10 -right-10 w-48 h-48 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-3xl" />
-                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-indigo-500/20 to-blue-500/20 rounded-full blur-3xl" />
+                <div className="absolute -top-10 -right-10 w-48 h-48 bg-gradient-to-br from-[#12B3A8]/20 to-[#4A7CFF]/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-[#4A7CFF]/20 to-[#12B3A8]/20 rounded-full blur-3xl" />
 
                 <div className="relative z-10 space-y-4">
                   <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-blue-300" />
+                    <Sparkles className="w-5 h-5 text-[#79A5FF]" />
                     <p className="text-gray-300">
                       Track your progress and claim your certification NFT once
                       completed.
@@ -455,7 +409,7 @@ export default function ModuleDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Rocket className="w-5 h-5 text-purple-300" />
+                    <Rocket className="w-5 h-5 text-[#79A5FF]" />
                     <p className="text-gray-300">
                       View the minted NFT on the certification page after
                       success.
@@ -490,6 +444,7 @@ export default function ModuleDetailPage() {
         isOpen={isPromoOpen}
         onClose={() => setIsPromoOpen(false)}
         onMint={handleClaim}
+        address={userAddress}
       />
     </div>
   );

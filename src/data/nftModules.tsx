@@ -1,4 +1,5 @@
 import React from "react";
+import { MODULE_THEME_GRADIENT_BR } from "@/theme/moduleTheme";
 
 // Icons for NFT modules
 const GlobeIcon = ({ className }: { className?: string }) => (
@@ -103,18 +104,34 @@ const BookOpenIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const ShieldCheckIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+    />
+  </svg>
+);
+
 export interface NFTModule {
   id: string;
   title: string;
   description: string;
   icon: (props: { className?: string }) => React.ReactElement;
+  image: string;
   level: string;
   duration: string;
   challenges: number;
   status: "available" | "coming-soon";
   gradient: string;
   database: "mongodb" | "postgres";
-  collectionName?: string; // For MongoDB modules
   href: string; // For navigation
   features: string[];
 }
@@ -122,17 +139,17 @@ export interface NFTModule {
 export const nftModules: NFTModule[] = [
   {
     id: "web3-basics",
-    title: "Web3 Basics",
+    title: "Web3 & Rust Foundations",
     description:
       "Learn Web3 fundamentals through engaging stories and interactive lessons. Perfect for beginners - no prior experience needed!",
     icon: GlobeIcon,
+    image: "/Web3 Basics.png",
     level: "Absolute Beginner",
     duration: "1-2 weeks",
     challenges: 6,
     status: "available",
-    gradient: "from-purple-500 to-blue-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "mongodb",
-    collectionName: "challenges-web3-basics",
     href: "/learn-web3-basics",
     features: [
       "Story-Based Learning",
@@ -147,13 +164,13 @@ export const nftModules: NFTModule[] = [
     description:
       "Master Arbitrum Stylus and build high-performance smart contracts with Rust. Learn WASM, constructors, storage, and advanced patterns through interactive lessons.",
     icon: CpuChipIcon,
+    image: "/Stylus Core Concepts.png",
     level: "Beginner to Intermediate",
     duration: "1-2 weeks",
     challenges: 6,
     status: "available",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "mongodb",
-    collectionName: "challenges-stylus-core-concepts",
     href: "/learn-stylus",
     features: [
       "Rust & WASM Fundamentals",
@@ -170,11 +187,12 @@ export const nftModules: NFTModule[] = [
     description:
       "Build a complete ERC20 token system and mint your achievement certificate! Learn ERC20 and ERC721 standards with Rust contract development.",
     icon: CpuChipIcon,
+    image: "/Stylus foundation.png",
     level: "Beginner",
     duration: "Less than 1 week",
     challenges: 1,
     status: "available",
-    gradient: "from-green-500 to-emerald-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "postgres",
     href: "/nft/stylus-foundation",
     features: [
@@ -190,13 +208,13 @@ export const nftModules: NFTModule[] = [
     description:
       "Configure, deploy, test, and operate your own Orbit L3 chain through structured theory and quizzes — no coding required.",
     icon: RocketLaunchIcon,
+    image: "/Master Arbitrum Orbit.png",
     level: "Intermediate to Advanced",
     duration: "2-3 weeks",
     challenges: 6,
     status: "available",
-    gradient: "from-emerald-500 to-teal-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "mongodb",
-    collectionName: "challenges-arbitrum-orbit",
     href: "/learn-orbit",
     features: [
       "Orbit Fundamentals",
@@ -213,11 +231,12 @@ export const nftModules: NFTModule[] = [
     description:
       "Build high-performance smart contracts with Rust, C, and C++ on Arbitrum",
     icon: CpuChipIcon,
+    image: "/Arbitrum Stylus.png",
     level: "Intermediate to Advanced",
     duration: "3-5 weeks",
     challenges: 11,
     status: "available",
-    gradient: "from-purple-500 to-pink-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "postgres",
     href: "/nft/arbitrum-stylus", // Special route for Postgres module
     features: [
@@ -233,13 +252,13 @@ export const nftModules: NFTModule[] = [
     description:
       "Learn DeFi fundamentals, DEXs, vaults, and security on Arbitrum through structured theory and quizzes with practical concepts.",
     icon: AcademicCapIcon,
+    image: "/Master DeFi on Arbitrum.png",
     level: "Beginner to Intermediate",
     duration: "1-2 weeks",
     challenges: 6,
     status: "available",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "mongodb",
-    collectionName: "challenges-defi-arbitrum",
     href: "/learn-defi",
     features: [
       "Fundamentals, DEXs, Vaults, Security",
@@ -255,13 +274,13 @@ export const nftModules: NFTModule[] = [
     description:
       "Foundations → token bridging → advanced protocols → tooling → Arbitrum bridge and troubleshooting — delivered via stories and quizzes.",
     icon: BookOpenIcon,
+    image: "/Master Cross-Chain Development.png",
     level: "Intermediate to Advanced",
     duration: "2-3 weeks",
     challenges: 6,
     status: "available",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "mongodb",
-    collectionName: "challenges-cross-chain",
     href: "/learn-cross-chain",
     features: [
       "Foundations & Real‑World Analogies",
@@ -278,19 +297,42 @@ export const nftModules: NFTModule[] = [
     description:
       "Master Arbitrum's powerful precompiles through interactive coding challenges",
     icon: CodeBracketIcon,
+    image: "/Precompile Playground.png",
     level: "Beginner to Advanced",
     duration: "1-2 weeks",
-    challenges: 6,
+    challenges: 5,
     status: "available",
-    gradient: "from-blue-500 to-indigo-600",
+    gradient: MODULE_THEME_GRADIENT_BR,
     database: "mongodb",
-    collectionName: "challenges-precompiles-overview",
     href: "/challenges",
     features: [
       "Interactive Challenges",
       "Real-world Examples",
       "Gas Optimization",
       "L1-L2 Messaging",
+    ],
+  },
+  {
+    id: "eigen-ai",
+    title: "Secure AI with Eigen",
+    description:
+      "Learn how EigenLayer enables production-grade AI systems using Trusted Execution Environments. Master TEE, verifiable inference, and confidential compute.",
+    icon: ShieldCheckIcon,
+    image: "/EigenModule.png",
+    level: "Beginner to Advanced",
+    duration: "2-3 weeks",
+    challenges: 8,
+    status: "available",
+    gradient: MODULE_THEME_GRADIENT_BR,
+    database: "mongodb",
+    href: "/learn-eigen",
+    features: [
+      "AI & TEE Fundamentals",
+      "EigenAI Verifiable Inference",
+      "EigenCompute & Intel TDX",
+      "Production AI Pipelines",
+      "Story-Based Learning",
+      "Interactive Quizzes",
     ],
   },
 ];

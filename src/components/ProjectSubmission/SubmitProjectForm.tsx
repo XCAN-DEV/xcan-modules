@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import ProjectPreview from "./ProjectPreview";
+import { MODULE_THEME_BG_R } from "@/theme/moduleTheme";
 
 interface TeamMember {
   name: string;
@@ -29,6 +31,22 @@ const SubmitProjectForm = () => {
   const { user } = usePrivy();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [submittedProject, setSubmittedProject] = useState<{
+    projectName: string;
+    projectDescription: string;
+    submittedBy: {
+      name: string;
+      address: string;
+      githubId: string;
+    };
+    teamMembers: TeamMember[];
+    githubRepository: string;
+    hostedProjectUrl: string;
+    projectImages: File[];
+    projectLogo: File | null;
+    demoVideoLink: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProjectSubmissionData>({
     projectName: "",
@@ -117,7 +135,6 @@ const SubmitProjectForm = () => {
         !formData.projectName ||
         !formData.projectDescription ||
         !formData.submittedBy.name ||
-        !formData.submittedBy.address ||
         !formData.submittedBy.githubId ||
         !formData.githubRepository ||
         !formData.demoVideoLink
@@ -129,12 +146,6 @@ const SubmitProjectForm = () => {
 
       if (formData.projectImages.length < 2) {
         setError("Please upload at least 2 project images");
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!formData.projectLogo) {
-        setError("Please upload a project logo");
         setIsSubmitting(false);
         return;
       }
@@ -163,6 +174,19 @@ const SubmitProjectForm = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        // Save submitted project data for preview
+        setSubmittedProject({
+          projectName: formData.projectName,
+          projectDescription: formData.projectDescription,
+          submittedBy: formData.submittedBy,
+          teamMembers: formData.teamMembers,
+          githubRepository: formData.githubRepository,
+          hostedProjectUrl: formData.hostedProjectUrl,
+          projectImages: formData.projectImages,
+          projectLogo: formData.projectLogo, // Can be null
+          demoVideoLink: formData.demoVideoLink,
+        });
         setSubmitSuccess(true);
         // Reset form
         setFormData({
@@ -194,30 +218,56 @@ const SubmitProjectForm = () => {
 
   if (submitSuccess) {
     return (
-      <div className="bg-gradient-to-r from-emerald-900/20 to-teal-900/20 border border-emerald-500/30 rounded-2xl p-12 text-center backdrop-blur-sm">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-6 shadow-lg">
-          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <>
+        <div className="bg-gradient-to-r from-[#1E3A8A]/20 to-[#4A7CFF]/20 border border-[#4A7CFF]/30 rounded-2xl p-12 text-center backdrop-blur-sm">
+          <div className={`inline-flex items-center justify-center w-20 h-20 ${MODULE_THEME_BG_R} rounded-full mb-6 shadow-lg`}>
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-3xl font-bold text-white mb-4">Project Submitted Successfully!</h3>
+          <p className="text-slate-300 mb-8 text-lg">
+            Your project has been submitted for review. It will appear in the showcase once approved.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {submittedProject && (
+              <button
+                onClick={() => setShowPreview(true)}
+                className={`${MODULE_THEME_BG_R} hover:brightness-110 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>Preview Project</span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setSubmitSuccess(false);
+                setSubmittedProject(null);
+                setShowPreview(false);
+              }}
+              className={`${MODULE_THEME_BG_R} hover:brightness-110 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl`}
+            >
+              Submit Another Project
+            </button>
+          </div>
         </div>
-        <h3 className="text-3xl font-bold text-white mb-4">Project Submitted Successfully!</h3>
-        <p className="text-slate-300 mb-8 text-lg">
-          Your project has been submitted for review. It will appear in the showcase once approved.
-        </p>
-        <button
-          onClick={() => setSubmitSuccess(false)}
-          className="bg-gradient-to-r from-[#4eb991] to-[#31b085] hover:from-teal-600 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          Submit Another Project
-        </button>
-      </div>
+        {showPreview && submittedProject && (
+          <ProjectPreview
+            project={submittedProject}
+            onClose={() => setShowPreview(false)}
+          />
+        )}
+      </>
     );
   }
 
   return (
     <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-10 border border-slate-700/50 shadow-2xl">
       <div className="flex items-center space-x-4 mb-8">
-        <div className="w-12 h-12 bg-gradient-to-r from-[#4eb991] to-[#31b085] rounded-xl flex items-center justify-center">
+        <div className={`w-12 h-12 ${MODULE_THEME_BG_R} rounded-xl flex items-center justify-center`}>
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
@@ -244,7 +294,7 @@ const SubmitProjectForm = () => {
             value={formData.projectName}
             onChange={handleInputChange}
             required
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             placeholder="Enter your project name"
           />
         </div>
@@ -260,7 +310,7 @@ const SubmitProjectForm = () => {
             onChange={handleInputChange}
             required
             rows={4}
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200 resize-none"
             placeholder="Describe your project, its features, and what makes it unique"
           />
         </div>
@@ -268,7 +318,7 @@ const SubmitProjectForm = () => {
         {/* Submitted By */}
         <div className="bg-slate-700/40 rounded-2xl p-8 border border-slate-600/50">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-r from-[#4eb991] to-[#31b085] rounded-lg flex items-center justify-center">
+            <div className={`w-8 h-8 ${MODULE_THEME_BG_R} rounded-lg flex items-center justify-center`}>
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -286,21 +336,20 @@ const SubmitProjectForm = () => {
                 value={formData.submittedBy.name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
                 placeholder="Your name"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-200 mb-3">
-                Wallet Address *
+                Wallet Address
               </label>
               <input
                 type="text"
                 name="submittedBy.address"
                 value={formData.submittedBy.address}
                 onChange={handleInputChange}
-                required
-                className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
                 placeholder="0x..."
               />
             </div>
@@ -314,7 +363,7 @@ const SubmitProjectForm = () => {
                 value={formData.submittedBy.githubId}
                 onChange={handleInputChange}
                 required
-                className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
                 placeholder="Your GitHub username"
               />
             </div>
@@ -324,7 +373,7 @@ const SubmitProjectForm = () => {
         {/* Team Members */}
         <div className="bg-slate-700/40 rounded-2xl p-8 border border-slate-600/50">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-r from-[#4eb991] to-[#31b085] rounded-lg flex items-center justify-center">
+            <div className={`w-8 h-8 ${MODULE_THEME_BG_R} rounded-lg flex items-center justify-center`}>
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -339,26 +388,26 @@ const SubmitProjectForm = () => {
               placeholder="Name"
               value={newTeamMember.name}
               onChange={(e) => setNewTeamMember(prev => ({ ...prev, name: e.target.value }))}
-              className="px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             />
             <input
               type="text"
               placeholder="Address"
               value={newTeamMember.address}
               onChange={(e) => setNewTeamMember(prev => ({ ...prev, address: e.target.value }))}
-              className="px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             />
             <input
               type="text"
               placeholder="GitHub ID"
               value={newTeamMember.githubId}
               onChange={(e) => setNewTeamMember(prev => ({ ...prev, githubId: e.target.value }))}
-              className="px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             />
             <button
               type="button"
               onClick={addTeamMember}
-              className="bg-gradient-to-r from-[#4eb991] to-[#31b085] hover:from-teal-600 hover:to-teal-700 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+              className={`${MODULE_THEME_BG_R} hover:brightness-110 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl`}
             >
               Add Member
             </button>
@@ -400,7 +449,7 @@ const SubmitProjectForm = () => {
             value={formData.githubRepository}
             onChange={handleInputChange}
             required
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             placeholder="https://github.com/username/repository"
           />
         </div>
@@ -416,7 +465,7 @@ const SubmitProjectForm = () => {
             multiple
             onChange={(e) => handleFileChange(e, "projectImages")}
             required
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gradient-to-r file:from-[#4eb991] file:to-[#31b085] file:text-white hover:file:from-teal-600 hover:file:to-teal-700 transition-all duration-200"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[linear-gradient(90deg,#1E3A8A_0%,#4A7CFF_100%)] file:text-white hover:file:brightness-110 transition-all duration-200"
           />
           <p className="text-sm text-slate-400 mt-3">
             Upload 2 images showcasing your project
@@ -426,14 +475,13 @@ const SubmitProjectForm = () => {
         {/* Project Logo */}
         <div>
           <label className="block text-sm font-semibold text-slate-200 mb-3">
-            Project Logo *
+            Project Logo
           </label>
           <input
             type="file"
             accept="image/*"
-            required
             onChange={(e) => handleFileChange(e, "projectLogo")}
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gradient-to-r file:from-[#4eb991] file:to-[#31b085] file:text-white hover:file:from-teal-600 hover:file:to-teal-700 transition-all duration-200"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[linear-gradient(90deg,#1E3A8A_0%,#4A7CFF_100%)] file:text-white hover:file:brightness-110 transition-all duration-200"
           />
         </div>
 
@@ -448,7 +496,7 @@ const SubmitProjectForm = () => {
             required
             value={formData.demoVideoLink}
             onChange={handleInputChange}
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             placeholder="https://youtube.com/... or https://vimeo.com/..."
           />
         </div>
@@ -463,7 +511,7 @@ const SubmitProjectForm = () => {
             name="hostedProjectUrl"
             value={formData.hostedProjectUrl}
             onChange={handleInputChange}
-            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-6 py-4 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#79A5FF] focus:border-transparent transition-all duration-200"
             placeholder="https://your-project.com"
           />
         </div>
@@ -473,7 +521,7 @@ const SubmitProjectForm = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-[#4eb991] to-[#31b085] hover:from-teal-600 hover:to-teal-700 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed text-white px-8 py-5 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none"
+            className={`w-full ${MODULE_THEME_BG_R} hover:brightness-110 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed text-white px-8 py-5 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none`}
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center space-x-3">

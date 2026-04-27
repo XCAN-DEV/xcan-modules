@@ -8,7 +8,9 @@ import "../../../styles/gamify.css";
 import { useWalletProtection } from "../../../hooks/useWalletProtection";
 import { useMint } from "../../../hooks/useMint";
 import PromoCodeModal from "../../../components/PromoCodeModal";
+import ConnectWallet from "@/components/ConnectWallet";
 import toast from "react-hot-toast";
+import { MODULE_THEME_BG_R } from "@/theme/moduleTheme";
 
 // export const metadata = {
 //   title: "Precompile Playground Challenges - CodeQuest",
@@ -24,12 +26,17 @@ export default function ChallengesPage() {
   const [completedSlugs, setCompletedSlugs] = useState<string[]>([]);
   const { certificationMint, isMinting, isCertificationMinting } = useMint();
   const [alreadyClaimed, setAlreadyClaimed] = useState(false);
+  const [isClaimStatusLoading, setIsClaimStatusLoading] = useState(true);
   const [isPromoOpen, setIsPromoOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserProgress = async () => {
       try {
-        if (!address) return;
+        if (!address) {
+          setIsClaimStatusLoading(false);
+          return;
+        }
+        setIsClaimStatusLoading(true);
         const res = await fetch(`/api/execute-challenge?userAddress=${address}`);
         if (!res.ok) return;
         const data = await res.json();
@@ -43,6 +50,9 @@ export default function ChallengesPage() {
           }
         } catch { }
       } catch (_) { }
+      finally {
+        setIsClaimStatusLoading(false);
+      }
     };
     fetchUserProgress();
   }, [address]);
@@ -114,9 +124,8 @@ export default function ChallengesPage() {
         {/* Header Section with improved styling */}
         <div className="flex flex-col md:flex-row justify-between items-start mb-8 bg-[#0D1221] p-6 rounded-lg shadow-md border border-gray-700">
           <div>
-            <h1 className="text-3xl font-bold mb-2 text-white">
-              <span className="text-blue-400">Arbitrum</span>{" "}
-              Precompiles
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#79A5FF] via-[#4A7CFF] to-[#1E3A8A] bg-clip-text text-transparent">
+              Arbitrum Precompiles
             </h1>
             <p className="text-gray-300">
               Learn how to interact with Arbitrum&apos;s precompiles through
@@ -126,7 +135,7 @@ export default function ChallengesPage() {
           <div className="mt-4 md:mt-0 flex flex-col xs:flex-row xs:items-center xs:space-x-3 space-y-2 xs:space-y-0 w-full max-w-xs md:flex-row md:items-center md:space-x-3 md:space-y-0">
             <button
               onClick={toggleSidebar}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm transition-all duration-200 flex items-center space-x-2 md:hidden cursor-pointer w-full xs:w-auto"
+              className={`text-white px-3 py-2 rounded-md text-sm transition-all duration-200 flex items-center space-x-2 md:hidden cursor-pointer w-full xs:w-auto ${MODULE_THEME_BG_R} hover:brightness-110`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -151,11 +160,26 @@ export default function ChallengesPage() {
 
         <div className="w-full flex flex-col items-center bg-[#0B1326]/60 backdrop-blur-md rounded-2xl border border-slate-700/60 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
           <div className="absolute -z-10 inset-0 rounded-2xl pointer-events-none" aria-hidden>
-            <div className="h-full w-full rounded-2xl opacity-[0.08] bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-400" />
+            <div className={`h-full w-full rounded-2xl opacity-[0.10] ${MODULE_THEME_BG_R}`} />
           </div>
           {/* Contextual Text */}
           <div className="text-center">
-            {alreadyClaimed ? (
+            {!address ? (
+              <div className="space-y-4 mb-4">
+                <p className="text-sm font-semibold text-gray-400 dark:text-gray-200">
+                  Connect your wallet to see your NFT certification status.
+                </p>
+                <ConnectWallet />
+              </div>
+            ) : isClaimStatusLoading ? (
+              <div className="flex items-center justify-center space-x-2 text-gray-400 mb-2">
+                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm">Checking certification status...</span>
+              </div>
+            ) : alreadyClaimed ? (
               <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400 mb-2">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -186,18 +210,27 @@ export default function ChallengesPage() {
             )}
           </div>
 
-          {/* NFT Claim Button */}
+          {/* NFT Claim Button - only show when wallet connected */}
+          {address && (
           <button
             onClick={() => setIsPromoOpen(true)}
-            disabled={!allCompleted || isCertificationMinting || alreadyClaimed}
+            disabled={isClaimStatusLoading || !allCompleted || isCertificationMinting || alreadyClaimed}
             className={`${alreadyClaimed
               ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-2 border-green-300 dark:border-green-700 cursor-default"
-              : allCompleted && !isMinting && !isCertificationMinting
-                ? "cursor-pointer bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 hover:from-blue-600 hover:via-sky-500 hover:to-cyan-500 text-white shadow-lg hover:shadow-cyan-500/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 transform hover:scale-[1.03] active:scale-[0.98]"
+              : allCompleted && !isMinting && !isCertificationMinting && !isClaimStatusLoading
+                ? `cursor-pointer ${MODULE_THEME_BG_R} hover:brightness-110 text-white shadow-lg hover:shadow-[#4A7CFF]/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#79A5FF]/60 transform hover:scale-[1.03] active:scale-[0.98]`
                 : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60 border border-gray-400/30 dark:border-gray-600/40"
               } px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 w-full xs:w-auto flex items-center justify-center space-x-2 min-h-[40px]`}
           >
-            {alreadyClaimed ? (
+            {isClaimStatusLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Checking...</span>
+              </div>
+            ) : alreadyClaimed ? (
               <>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -228,6 +261,7 @@ export default function ChallengesPage() {
               </>
             )}
           </button>
+          )}
 
           {/* Additional Info for Claimed State */}
           {alreadyClaimed && (
@@ -362,6 +396,7 @@ export default function ChallengesPage() {
         isOpen={isPromoOpen}
         onClose={() => setIsPromoOpen(false)}
         onMint={claimNFT}
+        address={address}
       />
     </div>
   );
